@@ -30,6 +30,24 @@
 #include <cassert>
 #include <string>
 
+struct RngState;
+
+inline void reset(RngState& rs);
+
+inline void reset(RngState& rs, const std::string& seed);
+
+inline void reset(RngState& rs, const long seed);
+
+inline void splitRngState(RngState& rs, const RngState& rs0, const std::string& sindex);
+
+inline void splitRngState(RngState& rs, const RngState& rs0, const long sindex = 0);
+
+inline uint64_t randGen(RngState& rs);
+
+inline double uRandGen(RngState& rs, const double upper = 1.0, const double lower = 0.0);
+
+inline double gRandGen(RngState& rs, const double sigma = 1.0, const double center = 0.0);
+
 struct RngState
 {
   uint64_t numBytes;
@@ -46,6 +64,16 @@ struct RngState
   RngState();
   RngState(const std::string& seed);
   RngState(const long seed);
+  RngState(const RngState& rs, const std::string& sindex);
+  RngState(const RngState& rs, const long sindex);
+  //
+  private:
+  RngState(const RngState& rs)
+    // this function is easily misused and cause mistakes, so we disable it.
+    // please always pass by reference.
+  {
+    assert(false);
+  }
 };
 
 inline void RngState::init()
@@ -67,6 +95,31 @@ inline void RngState::init()
   gaussion = 0.0;
   cacheAvail = 0;
   gaussionAvail = false;
+}
+
+inline RngState::RngState()
+{
+  init();
+}
+
+inline RngState::RngState(const std::string& seed)
+{
+  reset(*this, seed);
+}
+
+inline RngState::RngState(const long seed)
+{
+  reset(*this, seed);
+}
+
+inline RngState::RngState(const RngState& rs0, const std::string& seed)
+{
+  splitRngState(*this, rs0, seed);
+}
+
+inline RngState::RngState(const RngState& rs0, const long seed)
+{
+  splitRngState(*this, rs0, seed);
 }
 
 namespace sha256 {
@@ -326,15 +379,16 @@ namespace sha256 {
 
 }
 
-inline void splitRngState(RngState& rs, const RngState& rs0, const std::string& str)
-  // produce a new rng ``rs'' uniquely identified by ``rs0'' and ``str''
+inline void splitRngState(RngState& rs, const RngState& rs0, const std::string& sindex)
+  // produce a new rng ``rs'' uniquely identified by ``rs0'' and ``sindex''
   // will not affect old rng ``rs0''
+  // the function should behave correctly even if ``rs'' is actually ``rs0''
 {
   std::string data;
   if (false == rs.gaussionAvail) {
-    data = ssprintf("%lu S:%s", rs0.index, str.c_str());
+    data = ssprintf("%lu S:%s", rs0.index, sindex.c_str());
   } else {
-    data = ssprintf("%lug S:%s", rs0.index, str.c_str());
+    data = ssprintf("%lug S:%s", rs0.index, sindex.c_str());
   }
   const int nBlocks = (data.length() - 1) / 64 + 1;
   data.resize(nBlocks * 64, ' ');
@@ -352,7 +406,7 @@ inline void splitRngState(RngState& rs, const RngState& rs0, const std::string& 
   rs.gaussionAvail = false;
 }
 
-inline void splitRngState(RngState& rs, const RngState& rs0, const long sindex = 0)
+inline void splitRngState(RngState& rs, const RngState& rs0, const long sindex)
 {
   splitRngState(rs, rs0, show(sindex));
 }
@@ -372,21 +426,6 @@ inline void reset(RngState& rs, const long seed)
 {
   rs.init();
   splitRngState(rs, rs, seed);
-}
-
-inline RngState::RngState()
-{
-  init();
-}
-
-inline RngState::RngState(const std::string& seed)
-{
-  reset(*this, seed);
-}
-
-inline RngState::RngState(const long seed)
-{
-  reset(*this, seed);
 }
 
 inline uint64_t patchTwoUint32(const uint32_t a, const uint32_t b)
@@ -415,14 +454,14 @@ inline uint64_t randGen(RngState& rs)
   }
 }
 
-inline double uRandGen(RngState& rs, const double upper = 1.0, const double lower = 0.0)
+inline double uRandGen(RngState& rs, const double upper, const double lower)
 {
   uint64_t u = randGen(rs);
   const double fac = 1.0 / (256.0 * 256.0 * 256.0 * 256.0) / (256.0 * 256.0 * 256.0 * 256.0);
   return u * fac * (upper - lower) + lower;
 }
 
-inline double gRandGen(RngState& rs, const double sigma = 1.0, const double center = 0.0)
+inline double gRandGen(RngState& rs, const double sigma, const double center)
 {
   if (rs.gaussionAvail) {
     rs.gaussionAvail = false;
