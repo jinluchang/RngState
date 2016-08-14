@@ -359,33 +359,6 @@ namespace sha256 {
 
 }
 
-inline void splitRngState(RngState& rs, const RngState& rs0, const std::string& sindex)
-  // produce a new rng ``rs'' uniquely identified by ``rs0'' and ``sindex''
-  // will not affect old rng ``rs0''
-  // the function should behave correctly even if ``rs'' is actually ``rs0''
-{
-  std::string data;
-  if (false == rs.gaussionAvail) {
-    data = ssprintf("%lu S:%s", rs0.index, sindex.c_str());
-  } else {
-    data = ssprintf("%lug S:%s", rs0.index, sindex.c_str());
-  }
-  const int nBlocks = (data.length() - 1) / 64 + 1;
-  data.resize(nBlocks * 64, ' ');
-  sha256::processBlock(rs.hash, rs0.hash, (const uint8_t*)data.c_str());
-  for (int i = 1; i < nBlocks; ++i) {
-    sha256::processBlock(rs.hash, rs.hash, (const uint8_t*)data.c_str() + i * 64);
-  }
-  rs.numBytes = rs0.numBytes + nBlocks * 64;
-  rs.index = 0;
-  rs.cache[0] = 0;
-  rs.cache[1] = 0;
-  rs.cache[2] = 0;
-  rs.gaussion = 0.0;
-  rs.cacheAvail = 0;
-  rs.gaussionAvail = false;
-}
-
 inline void reset(RngState& rs)
 {
   std::memset(&rs, 0, sizeof(RngState));
@@ -411,6 +384,33 @@ inline void reset(RngState& rs, const std::string& seed)
 {
   reset(rs);
   splitRngState(rs, rs, seed);
+}
+
+inline void splitRngState(RngState& rs, const RngState& rs0, const std::string& sindex)
+  // produce a new rng ``rs'' uniquely identified by ``rs0'' and ``sindex''
+  // will not affect old rng ``rs0''
+  // the function should behave correctly even if ``rs'' is actually ``rs0''
+{
+  std::string data;
+  if (false == rs.gaussionAvail) {
+    data = ssprintf("%lu S:%s", rs0.index, sindex.c_str());
+  } else {
+    data = ssprintf("%lug S:%s", rs0.index, sindex.c_str());
+  }
+  const int nBlocks = (data.length() - 1) / 64 + 1;
+  data.resize(nBlocks * 64, ' ');
+  sha256::processBlock(rs.hash, rs0.hash, (const uint8_t*)data.c_str());
+  for (int i = 1; i < nBlocks; ++i) {
+    sha256::processBlock(rs.hash, rs.hash, (const uint8_t*)data.c_str() + i * 64);
+  }
+  rs.numBytes = rs0.numBytes + nBlocks * 64;
+  rs.index = 0;
+  rs.cache[0] = 0;
+  rs.cache[1] = 0;
+  rs.cache[2] = 0;
+  rs.gaussion = 0.0;
+  rs.cacheAvail = 0;
+  rs.gaussionAvail = false;
 }
 
 inline uint64_t patchTwoUint32(const uint32_t a, const uint32_t b)
