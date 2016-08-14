@@ -92,14 +92,6 @@ struct RngState
   {
     splitRngState(*this, rs0, sindex);
   }
-  //
-  private:
-  RngState(const RngState& rs)
-    // this function is easily misused and cause mistakes, so we disable it.
-    // please always pass by reference.
-  {
-    assert(false);
-  }
 };
 
 namespace sha256 {
