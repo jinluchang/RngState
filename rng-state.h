@@ -397,11 +397,7 @@ inline void splitRngState(RngState& rs, const RngState& rs0, const std::string& 
   // the function should behave correctly even if ``rs'' is actually ``rs0''
 {
   std::string data;
-  if (false == rs.gaussionAvail) {
-    data = ssprintf("%lu S:%s", rs0.index, sindex.c_str());
-  } else {
-    data = ssprintf("%lug S:%s", rs0.index, sindex.c_str());
-  }
+  data = ssprintf("[%lu] {%s}", rs0.index, sindex.c_str());
   const int nBlocks = (data.length() - 1) / 64 + 1;
   data.resize(nBlocks * 64, ' ');
   sha256::processBlock(rs.hash, rs0.hash, (const uint8_t*)data.c_str());
@@ -431,18 +427,17 @@ inline void computeHashWithInput(uint32_t hash[8], const RngState& rs, const std
 inline uint64_t randGen(RngState& rs)
 {
   assert(0 <= rs.cacheAvail && rs.cacheAvail <= 3);
+  rs.index += 1;
   if (rs.cacheAvail > 0) {
     rs.cacheAvail -= 1;
-    rs.index += 1;
     return rs.cache[rs.cacheAvail];
   } else {
     uint32_t hash[8];
-    computeHashWithInput(hash, rs, show(rs.index));
+    computeHashWithInput(hash, rs, ssprintf("[%lu]", rs.index));
     rs.cache[0] = patchTwoUint32(hash[0], hash[1]);
     rs.cache[1] = patchTwoUint32(hash[2], hash[3]);
     rs.cache[2] = patchTwoUint32(hash[4], hash[5]);
     rs.cacheAvail = 3;
-    rs.index += 1;
     return patchTwoUint32(hash[6], hash[7]);
   }
 }
@@ -456,6 +451,7 @@ inline double uRandGen(RngState& rs, const double upper, const double lower)
 
 inline double gRandGen(RngState& rs, const double sigma, const double center)
 {
+  rs.index += 1;
   if (rs.gaussionAvail) {
     rs.gaussionAvail = false;
     return rs.gaussion * sigma + center;
