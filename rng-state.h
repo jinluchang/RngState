@@ -144,6 +144,7 @@ namespace sha256 {
 
   inline void processBlock(uint32_t newHash[8], const uint32_t oldHash[8], const uint8_t data[64])
     // process 64 bytes of data
+    // newHash and oldHash and be the same
   {
     // get last hash
     uint32_t a = oldHash[0];
@@ -291,13 +292,14 @@ namespace sha256 {
       const uint32_t oldHash[8], const uint64_t numBytes,
       const uint8_t* input, const size_t inputSize)
     // process final block, less than 64 bytes
+    // newHash and oldHash and be the same
   {
     // the input bytes are considered as bits strings, where the first bit is the most significant bit of the byte
     // - append "1" bit to message
     // - append "0" bits until message length in bit mod 512 is 448
     // - append length as 64 bit integer
     // process initial parts of input
-    std::memcpy(hash, oldHash, 32);
+    std::memmove(hash, oldHash, 32);
     const int nBlocks = inputSize / 64;
     for (int i = 0; i < nBlocks; ++i) {
       processBlock(hash, hash, input + i * 64);
