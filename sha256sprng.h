@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include <rng-state.h>
+#include "rng-state.h"
 
 #include <array>
 #include <cstring>
