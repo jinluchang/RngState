@@ -107,11 +107,11 @@ struct RngState
 
 namespace sha256 {
 
-  const int BlockSize = 512 / 8;
+  const size_t BlockSize = 512 / 8;
 
-  const int HashBytes = 32;
+  const size_t HashBytes = 32;
 
-  const int HashValues = HashBytes / 4;
+  const size_t HashValues = HashBytes / 4;
 
   inline uint32_t rotate(uint32_t a, uint32_t c)
   {
