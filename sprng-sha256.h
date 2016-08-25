@@ -41,11 +41,9 @@ struct SprngSha256
   {
     seed(val);
   }
-  explicit SprngSha256(uint32_t val)
-  {
-    seed((result_type)val);
-  }
-  template <class Sseq>
+  template<typename Sseq, typename = typename
+    std::enable_if<!std::is_same<Sseq, SprngSha256>::value>
+    ::type>
   explicit SprngSha256(Sseq& q)
   {
     seed(q);
@@ -66,7 +64,8 @@ struct SprngSha256
     reset(rs, (long)val);
   }
   template <class Sseq>
-  void seed(Sseq& q)
+  typename std::enable_if<std::is_class<Sseq>::value>::type
+  seed(Sseq& q)
   {
     std::array<uint32_t, 8> seq;
     q.generate(seq.begin(), seq.end());
