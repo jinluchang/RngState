@@ -37,7 +37,11 @@ struct SprngSha256
   //
   static constexpr result_type default_seed = 0;
   //
-  SprngSha256(uint64_t val = default_seed)
+  SprngSha256(result_type val = default_seed)
+  {
+    seed(val);
+  }
+  SprngSha256(uint32_t val)
   {
     seed(val);
   }
@@ -60,6 +64,10 @@ struct SprngSha256
   void seed(result_type val = default_seed)
   {
     reset(rs, (long)val);
+  }
+  void seed(uint32_t val)
+  {
+    seed((result_type)val);
   }
   template <class Sseq>
   void seed(Sseq& q)
