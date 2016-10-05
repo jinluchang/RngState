@@ -154,8 +154,8 @@ inline void importRngState(RngState& rs, const uint32_t* v)
   for (int i = 0; i < 3; ++i) {
     rs.cache[i] = patchTwoUint32(v[12 + i * 2], v[12 + i * 2 + 1]);
   }
-  uint64_t* p = (uint64_t*)&rs.gaussian;
-  *p = patchTwoUint32(v[18], v[19]);
+  uint64_t g = patchTwoUint32(v[18], v[19]);
+  rs.gaussian = reinterpret_cast<double&>(g);
   rs.cacheAvail = v[20];
   rs.gaussianAvail = v[21];
 }
