@@ -1,4 +1,4 @@
-# RngState-cc
+# RngState
 
 A splittable random number generator based on SHA256.
 
