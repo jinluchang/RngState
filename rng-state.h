@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <endian.h>
 #include <cstring>
+#include <climits>
 #include <cmath>
 #include <cassert>
 #include <string>
@@ -65,7 +66,7 @@ struct RngState
 {
   uint64_t numBytes;
   uint32_t hash[8];
-  long type;
+  unsigned long type;
   unsigned long index;
   //
   uint64_t cache[3];
@@ -101,13 +102,11 @@ struct RngState
   //
   RngState split(const std::string& sindex)
   {
-    RngState rs(*this, sindex);
-    return rs;
+    return RngState(*this, sindex);
   }
   RngState split(const long sindex)
   {
-    RngState rs(*this, sindex);
-    return rs;
+    return RngState(*this, sindex);
   }
 };
 
@@ -117,7 +116,7 @@ inline RngState& getGlobalRngState()
   return rs;
 }
 
-inline void setType(RngState& rs, long type = 0)
+inline void setType(RngState& rs, long type = ULONG_MAX)
 {
   rs.type = type;
 }
@@ -228,7 +227,7 @@ inline void reset(RngState& rs)
   std::memset(&rs, 0, sizeof(RngState));
   rs.numBytes = 0;
   sha256::setInitialHash(rs.hash);
-  rs.type = 0;
+  rs.type = ULONG_MAX;
   rs.index = 0;
   rs.cache[0] = 0;
   rs.cache[1] = 0;
@@ -250,7 +249,7 @@ inline void splitRngState(RngState& rs, const RngState& rs0, const std::string& 
   // the function should behave correctly even if ``rs'' is actually ``rs0''
 {
   std::string data;
-  if (0 == rs0.type) {
+  if (ULONG_MAX == rs0.type) {
     data = ssprintf("[%lu] {%s}", rs0.index, sindex.c_str());
   } else {
     data = ssprintf("[%ld,%lu] {%s}", rs0.type, rs0.index, sindex.c_str());
@@ -262,7 +261,7 @@ inline void splitRngState(RngState& rs, const RngState& rs0, const std::string& 
     sha256::processBlock(rs.hash, rs.hash, (const uint8_t*)data.c_str() + i * 64);
   }
   rs.numBytes = rs0.numBytes + nBlocks * 64;
-  rs.type = 0;
+  rs.type = ULONG_MAX;
   rs.index = 0;
   rs.cache[0] = 0;
   rs.cache[1] = 0;
@@ -288,7 +287,7 @@ inline uint64_t randGen(RngState& rs)
     return r;
   } else {
     uint32_t hash[8];
-    if (0 == rs.type) {
+    if (ULONG_MAX == rs.type) {
       computeHashWithInput(hash, rs, ssprintf("[%lu]", rs.index));
     } else {
       computeHashWithInput(hash, rs, ssprintf("[%ld,%lu]", rs.type, rs.index));
