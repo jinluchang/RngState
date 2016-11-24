@@ -54,6 +54,8 @@ inline void splitRngState(RngState& rs, const RngState& rs0, const long sindex =
   splitRngState(rs, rs0, show(sindex));
 }
 
+inline void setType(RngState& rs, const unsigned long type);
+
 inline uint64_t randGen(RngState& rs);
 
 inline double uRandGen(RngState& rs, const double upper = 1.0, const double lower = 0.0);
@@ -108,6 +110,13 @@ struct RngState
   {
     return RngState(*this, sindex);
   }
+  //
+  RngState newtype(const unsigned long type)
+  {
+    RngState rs(*this);
+    setType(rs, type);
+    return rs;
+  }
 };
 
 inline RngState& getGlobalRngState()
@@ -116,8 +125,10 @@ inline RngState& getGlobalRngState()
   return rs;
 }
 
-inline void setType(RngState& rs, long type = ULONG_MAX)
+inline void setType(RngState& rs, const unsigned long type)
 {
+  assert(ULONG_MAX == rs.type);
+  assert(ULONG_MAX != type);
   rs.type = type;
   rs.cacheAvail = 0;
   rs.gaussianAvail = false;
