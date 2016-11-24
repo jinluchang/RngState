@@ -95,23 +95,25 @@ struct RngState
   }
   RngState(const RngState& rs0, const std::string& sindex)
   {
+    std::memset(this, 0, sizeof(RngState));
     splitRngState(*this, rs0, sindex);
   }
   RngState(const RngState& rs0, const long sindex)
   {
+    std::memset(this, 0, sizeof(RngState));
     splitRngState(*this, rs0, sindex);
   }
   //
-  RngState split(const std::string& sindex)
+  RngState split(const std::string& sindex) const
   {
     return RngState(*this, sindex);
   }
-  RngState split(const long sindex)
+  RngState split(const long sindex) const
   {
     return RngState(*this, sindex);
   }
   //
-  RngState newtype(const unsigned long type)
+  RngState newtype(const unsigned long type) const
   {
     RngState rs(*this);
     setType(rs, type);
@@ -232,7 +234,12 @@ inline std::string show(const RngState& rs)
 
 inline bool operator==(const RngState& rs1, const RngState& rs2)
 {
-  return 0 == memcmp(&rs1, &rs2, sizeof(RngState));
+  return 0 == std::memcmp(&rs1, &rs2, sizeof(RngState));
+}
+
+inline bool operator!=(const RngState& rs1, const RngState& rs2)
+{
+  return !(rs1 == rs2);
 }
 
 inline void reset(RngState& rs)
