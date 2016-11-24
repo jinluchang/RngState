@@ -119,6 +119,8 @@ inline RngState& getGlobalRngState()
 inline void setType(RngState& rs, long type = ULONG_MAX)
 {
   rs.type = type;
+  rs.cacheAvail = 0;
+  rs.gaussianAvail = false;
 }
 
 const size_t RNG_STATE_NUM_OF_INT32 = 2 + 8 + 2 + 2 + 3 * 2 + 2 + 1 + 1;
