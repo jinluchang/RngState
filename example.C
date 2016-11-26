@@ -23,6 +23,29 @@ void testRngField()
   double sum = 0.0;
   double sumsq = 0.0;
   for (long gindex = 0; gindex < volume; ++gindex) {
+    RngState rsi(rs, gindex);
+    double value = 0.0;
+    for (long i = 0; i < 32; ++i) {
+      value += uRandGen(rsi, sqrt(2.0)/32 + 0.05, sqrt(2.0)/32 - 0.05);
+      value += gRandGen(rsi, sqrt(3.0)/32, std::sqrt(0.2));
+    }
+    sum += value;
+    sumsq += sqr(value);
+  }
+  displayln(ssprintf("Expected : %24.16f", std::sqrt(2.0) + std::sqrt(3.0)));
+  displayln(ssprintf("Mean     : %24.16f", sum / volume));
+  displayln(ssprintf("Var      : %24.16f", std::sqrt(sumsq / volume - sqr(sum / volume)) / sqrt(volume-1)));
+}
+
+void testRngNewtypeField()
+{
+  static const char* fname = "testRngNewtypeField";
+  displayln(fname);
+  const RngState rs(getGlobalRngState(), fname);
+  const long volume = 16 * 1024;
+  double sum = 0.0;
+  double sumsq = 0.0;
+  for (long gindex = 0; gindex < volume; ++gindex) {
     RngState rsi = rs.newtype(gindex);
     double value = 0.0;
     for (long i = 0; i < 32; ++i) {
@@ -40,6 +63,37 @@ void testRngField()
 void testRngBlock()
 {
   static const char* fname = "testRngBlock";
+  displayln(fname);
+  RngState rs(getGlobalRngState(), fname);
+  const int Nb = 128;
+  const int Ni = 8;
+  const int Ndrop = 2;
+  const int Ntake = 8;
+  double sum = 0;
+  double sigma2 = 0;
+  for (long block = 0; block < Nb; ++block) {
+    Complex a = 0;
+    for (long id = 0; id < Ni; ++id) {
+      long index = block * Ni + id;
+      RngState rsi(rs, index);
+      for (long i = 0; i < Ndrop; ++i) {
+        uRandGen(rsi);
+      }
+      for (long i = 0; i < Ntake; ++i) {
+        a += std::polar(1.0, uRandGen(rsi, PI, -PI));
+      }
+    }
+    sum += norm(a);
+    sigma2 += sqr(norm(a));
+  }
+  displayln(ssprintf("Expected : %24.16f", (double)Ni * Ntake));
+  displayln(ssprintf("Mean     : %24.16f", sum / Nb));
+  displayln(ssprintf("Var      : %24.16f", sqrt(sigma2 / Nb - sqr(sum / Nb)) / sqrt(Nb-1)));
+}
+
+void testRngNewtypeBlock()
+{
+  static const char* fname = "testRngNewtypeBlock";
   displayln(fname);
   RngState rs(getGlobalRngState(), fname);
   const int Nb = 128;
@@ -146,7 +200,9 @@ int main()
   reset(getGlobalRngState(), "exampleRngState");
   assert(getGlobalRngState() == RngState("exampleRngState"));
   testRngField();
+  testRngNewtypeField();
   testRngBlock();
+  testRngNewtypeBlock();
   testGaussianRngProb();
   testRngApi();
   assert(getGlobalRngState() == RngState("exampleRngState"));

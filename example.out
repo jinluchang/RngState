@@ -1,11 +1,19 @@
 testRngField
 Expected :       3.1462643699419726
-Mean     :       3.1352848586600026
-Var      :       0.0197882140558002
+Mean     :       3.1418848818627430
+Var      :       0.0198774116369799
+testRngNewtypeField
+Expected :       3.1462643699419726
+Mean     :       3.1402215373374229
+Var      :       0.0196783941415295
 testRngBlock
 Expected :      64.0000000000000000
-Mean     :      56.3709667347011560
-Var      :       5.6231659155063340
+Mean     :      64.7433356024287008
+Var      :       4.9798308924472305
+testRngNewtypeBlock
+Expected :      64.0000000000000000
+Mean     :      60.6899663005860290
+Var      :       6.0745569599558564
 testGaussianRngProb
 Expected:       0.6826894921370000
 Find-out:       0.6829748153686523
